@@ -155,7 +155,9 @@
     <tr><td>背伸び</td><td><kbd data-key="stretch"></kbd></td></tr>
     <tr><td>カメラ</td><td data-key="camera"></td></tr>
     <tr><td>位置リセット</td><td><kbd data-key="reset"></kbd></td></tr>
-    <tr><td><b>相手の切り替え</b></td><td><kbd data-key="swap"></kbd> 木人 ⇄ ドラゴン</td></tr>
+    <tr><td><b>相手の切り替え</b></td><td><kbd data-key="swap"></kbd> 木人 → ドラゴン → ゴーレム軍団</td></tr>
+    <tr><td><b>クラウド特殊必殺・静止世界</b></td><td><kbd>G</kbd> ／ コントローラー <kbd>十字↑</kbd> ／ タッチ「時止め」：セピアの静止空間で敵と弾を8秒止める（味方は動ける）</td></tr>
+    <tr><td><b>ターゲット切り替え</b></td><td>コントローラー <kbd>RT</kbd> 次 ／ <kbd>LT</kbd> 前　キーボード <kbd>X</kbd> 次 ／ <kbd>Z</kbd> 前（闇のスピリットは対象外）</td></tr>
     <tr><td><b>共闘：クラウド</b></td><td><kbd data-key="ally"></kbd> 呼び出す／戻す</td></tr>
     <tr><td><b>BGM</b></td><td><kbd>M</kbd> または左上の ♪ でON/OFF</td></tr>
     <tr><td><b>効果音</b></td><td><kbd>N</kbd> または左上の SE でON/OFF</td></tr>
@@ -171,7 +173,7 @@
 <div id="enemyBox"><button id="swapBtn" disabled>相手：<span id="enemyName">木人</span> ⇄</button></div>
 <div id="ehp" class="hp"><div class="plate"><span class="tag">BOSS</span><span class="nm" id="ehpName">蒼鱗の竜</span><span class="num" id="ehpNum"></span></div><div class="frame"><div class="lag" id="ehpLag"></div><div class="fill" id="ehpbar"></div><div class="gloss"></div></div></div>
 <div id="php" class="hp"><div class="plate"><span class="tag" id="phpTag">PLAYER</span><span class="nm" id="phpName">セツナ</span><span class="num" id="phpNum"></span></div><div class="frame"><div class="lag" id="phpLag"></div><div class="fill" id="phpbar"></div><div class="gloss"></div></div></div>
-<div id="ultPrompt"><kbd id="ultKey">B</kbd><div>奥義・太陽風<small>SUN WIND ─ CRIMSON FLARE</small></div></div>
+<div id="ultPrompt"><kbd id="ultKey">B</kbd><div id="ultName">奥義・太陽風<small>SUN WIND ─ CRIMSON FLARE</small></div></div>
 <button id="helpToggle">？</button>
 <div id="touch">
   <div id="tzoneL"></div><div id="tzoneR"></div>
@@ -181,7 +183,7 @@
   <div class="tbtn" id="bAtk" data-b="attack">斬</div>
   <div class="tbtn" id="bDash" data-b="dash">迅雷</div>
   <div class="tbtn" id="bSp" data-b="special">必殺</div>
-  <div class="tsmall"><div class="tbtn" data-b="wave">手を<br>振る</div><div class="tbtn" data-b="stretch">背伸び</div><div class="tbtn" data-b="reset">リセット</div><div class="tbtn" data-b="swap">相手</div><div class="tbtn" data-b="ally">共闘</div><div class="tbtn" data-b="chr">交代</div><div class="tbtn" data-b="partner">仲間</div></div>
+  <div class="tsmall"><div class="tbtn" data-b="wave">手を<br>振る</div><div class="tbtn" data-b="stretch">背伸び</div><div class="tbtn" data-b="reset">リセット</div><div class="tbtn" data-b="swap">相手</div><div class="tbtn" data-b="tnext">標的</div><div class="tbtn" data-b="tstop">時止め</div><div class="tbtn" data-b="ally">共闘</div><div class="tbtn" data-b="chr">交代</div><div class="tbtn" data-b="partner">仲間</div></div>
 </div>
 <div id="combo"><div class="row"><span id="hits">0</span><span id="hitlbl">HITS</span></div><div id="ctimer"><i id="ctimerI"></i></div><div id="rank"></div><div id="ult"><div class="cap"><span>ULTIMATE</span><span id="ultTxt">0 / 99</span></div><div class="g"><i id="ultI"></i></div></div></div>
 <script src="assets/setsuna.js?v=0773a185"></script>
@@ -190,8 +192,10 @@
 <script src="assets/cloud.js?v=3dccb559"></script>
 <script src="assets/compass.js?v=90c5c66a"></script>
 <script src="assets/towa.js?v=13497617"></script>
+<script src="assets/ice_golem.js?v=8b624d77"></script>
+<script src="assets/flare_golem.js?v=dbc2a864"></script>
 <script src="assets/bgm.js?v=32eba4fa"></script>
 <script src="assets/sfx.js?v=867bb993"></script>
-<script src="game/game.js?v=c9bb41fb"></script>
+<script src="game/game.js?v=ed796050"></script>
 </body>
 </html>
