@@ -198,8 +198,10 @@
     <tr><td><b>共闘：クラウド</b></td><td><kbd data-key="ally"></kbd> 呼び出す／戻す</td></tr>
     <tr><td><b>BGM</b></td><td><kbd>M</kbd> または左上の ♪ でON/OFF</td></tr>
     <tr><td><b>効果音</b></td><td><kbd>N</kbd> または左上の SE でON/OFF</td></tr>
-    <tr><td><b>操作キャラ交代</b></td><td><kbd data-key="chr"></kbd> セツナ → トワ → チョコ → セツナ（チョコのときは直前のキャラが仲間として残る）</td></tr>
+    <tr><td><b>操作キャラ交代</b></td><td><kbd data-key="chr"></kbd> セツナ → トワ → チョコ → ハーバー → セツナ（チョコ・ハーバーのときは直前のキャラが仲間として残る）</td></tr>
     <tr><td><b>チョコ：虚空演算機</b></td><td>移動は自動（最も近い敵から8m）。十字キー／矢印・WASD で選ぶ、<kbd>A</kbd>／<kbd>Space</kbd> 押す、<kbd>Y</kbd>／<kbd>K</kbd> 実行、<kbd>X</kbd>／<kbd>F</kbd> 分析（3秒）、<kbd>RB</kbd> クリア、<kbd>Backspace</kbd> 1つ戻す、<kbd>LB</kbd>／<kbd>Delete</kbd> 要素を捨てる、<kbd>E</kbd> ドロー（言葉か−9〜9の数字を2枚・8秒ごと。使うと消える1回きりの要素）。式は要素1〜3個（× ÷ を先に計算、√・±反転・|x|・交換は直前の要素にかかる）、99HITで <kbd>B</kbd>／<kbd>L</kbd> オーバードライブ（30秒、敵ライフ値100の上限と9999の制限が外れ、交換が使える）。演算ごとに3〜8秒のクールダウン（オーバードライブ中はなし）。演算子は演算ごとにランダムで絞られる（増やす手段・減らす手段は必ず1つずつ以上）。演算するたびに HEAT が溜まり、100で OVERHEAT＝15秒行動不能（HEAT値も要素として演算で下げられる）</td></tr>
+    <tr><td><b>ハーバー：現実</b></td><td>現実では無力。<kbd data-key="attack"></kbd> 鏡を置く（目標を囲む立体の九芒星の陣形に9枚、重ならない。移動しながらだと目の前に）。鏡に映った敵は1枚につき2秒に1HIT。<kbd data-key="special"></kbd> ブラックスポットライト（鏡から鏡へ乱反射する黒い三角錐の鎖。鎖の線・鏡の囲みの中の敵は動けず攻撃もできない＝拘束、8秒）。<kbd data-key="dash"></kbd> 迅雷ダッシュ（5m以内の鏡があれば自動で狙って飛び込み、鏡の世界へ）</td></tr>
+    <tr><td><b>ハーバー：鏡の世界</b></td><td>一人称。移動は高速、視点はドラッグ／右スティック。<kbd data-key="attack"></kbd> 巨大なクロー斬撃（5段・敵へ自動で踏み込む、攻撃中にホーミング弾7発）。鏡に映った敵だけを一方的に攻撃でき、敵は攻撃できない。<kbd data-key="dash"></kbd> 5m以内の鏡から現実へ（出てくるときに一撃）／鏡がなければブリンク。<kbd>Y</kbd>／<kbd>F</kbd> 最寄りの鏡から現実へ。鏡の世界では敵の攻撃・弾は一切なし。99HITで <kbd data-key="special"></kbd> 奥義・鏡映破壊（鏡の世界ごと敵と街を粉砕して現実へ戻る）</td></tr>
     <tr><td><b>仲間（もう一人）</b></td><td><kbd data-key="partner"></kbd> 呼び出す／戻す（AIで自動戦闘）</td></tr>
     <tr><td>操作説明 ON/OFF</td><td><kbd data-key="help"></kbd> / 左上の ？</td></tr>
   </table>
@@ -233,8 +235,10 @@
 <script src="assets/ice_golem.js?v=8b624d77"></script>
 <script src="assets/flare_golem.js?v=dbc2a864"></script>
 <script src="assets/choco.js?v=84046365"></script>
+<script src="assets/harbor.js?v=f9102544"></script>
+<script src="assets/harbor_mirror.js?v=5423c146"></script>
 <script src="assets/bgm.js?v=32eba4fa"></script>
 <script src="assets/sfx.js?v=867bb993"></script>
-<script src="game/game.js?v=6629c787"></script>
+<script src="game/game.js?v=f8c25ead"></script>
 </body>
 </html>
