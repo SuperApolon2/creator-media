@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>セツナ — 双刀・月華鎖葬</title>
+<style>
+  html,body{margin:0;height:100%;overflow:hidden;background:#f6dde6;font-family:"Hiragino Sans","Yu Gothic UI","Meiryo",system-ui,sans-serif;color:#4a3340}
+  #app{position:fixed;inset:0}
+  #loading{position:fixed;inset:0;display:grid;place-items:center;font-size:18px;letter-spacing:.1em;background:#f6dde6;transition:opacity .6s}
+  body.ready #loading{opacity:0;pointer-events:none}
+  #loading{display:none!important}
+  /* 起動画面：旧ゲーム画面が一瞬見えないよう、最初から最前面に置き、タイトル画面ができたら消す */
+  #boot{position:fixed;inset:0;z-index:2147483000;background:#05040c;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:26px;font-family:"Hiragino Sans","Yu Gothic UI",system-ui,sans-serif;transition:opacity .7s}
+  #boot.off{opacity:0;pointer-events:none}
+  #boot .lg{font:900 italic clamp(48px,8vw,104px) "Arial Black",system-ui;letter-spacing:.04em;text-shadow:0 0 40px #6a5cff66}
+  #boot .lg b{color:#ff3b5c}
+  #boot .ht{width:14px;height:14px;border-radius:50%;background:#ff3b5c;box-shadow:0 0 24px #ff3b5c;animation:bootB 1.1s infinite}
+  @keyframes bootB{0%,100%{transform:scale(.8);opacity:.6}15%{transform:scale(1.25);opacity:1}30%{transform:scale(.95)}45%{transform:scale(1.12)}}
+  #boot .bar{width:min(420px,70vw);height:3px;background:#ffffff1a;overflow:hidden}
+  #boot .bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#f3e600,#ff3b5c);transition:width .25s}
+  #boot .tx{font:900 italic 13px "Arial Black",system-ui;letter-spacing:.35em;color:#bdb8e8}
+  #boot .er{font:700 13px system-ui;color:#ff8aa0;max-width:80vw;text-align:center}
+  .panel{position:fixed;background:rgba(255,255,255,.78);backdrop-filter:blur(8px);border-radius:14px;box-shadow:0 4px 18px rgba(120,60,90,.12);padding:12px 14px;font-size:13px;line-height:1.55}
+  #help{left:14px;top:14px;max-width:300px}
+  #help h1{font-size:15px;margin:0 0 6px;letter-spacing:.05em}
+  #help table{border-collapse:collapse}
+  #help td{padding:1px 8px 1px 0;vertical-align:top}
+  kbd{display:inline-block;min-width:1.3em;text-align:center;padding:0 5px;border-radius:6px;background:#fff;border:1px solid #e3c9d4;font:600 12px/1.6 system-ui;color:#7a3b58}
+  #pad{margin-top:8px;font-size:12px;color:#8a6a7a}
+  #pad.on{color:#2f7a4f;font-weight:600}
+  #state{right:14px;top:14px;text-align:right}
+  #motion{font-size:18px;font-weight:700;color:#c2477a}
+  #buttons{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+  #buttons button{border:0;border-radius:999px;padding:8px 14px;background:rgba(255,255,255,.85);color:#7a3b58;font:600 13px inherit;font-family:inherit;cursor:pointer;box-shadow:0 2px 8px rgba(120,60,90,.15)}
+  #buttons button:hover{background:#fff;color:#c2477a}
+  @media (max-width:640px){#help{max-width:220px;font-size:11px}}
+  #flash{position:fixed;inset:0;pointer-events:none;opacity:0;mix-blend-mode:screen}
+  #movename{position:fixed;left:50%;top:18%;transform:translateX(-50%);font:700 30px "Hiragino Mincho ProN","Yu Mincho",serif;letter-spacing:.35em;color:#fff;text-shadow:0 0 12px #c2477a,0 0 28px #ff4a6a;opacity:0;pointer-events:none;white-space:nowrap}
+  #movename.on{animation:mv 1.1s ease-out}
+  @keyframes mv{0%{opacity:0;letter-spacing:1.2em}15%{opacity:1;letter-spacing:.35em}70%{opacity:1}100%{opacity:0}}
+  .lb{position:fixed;left:0;right:0;height:var(--lb,0vh);background:#000;pointer-events:none;z-index:5}
+  html,body{touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;overscroll-behavior:none}
+  #touch{position:fixed;inset:0;display:none;z-index:6}
+  body.touch #touch{display:block}
+  #tzoneL{position:absolute;left:0;top:0;bottom:0;width:45%}
+  #tzoneR{position:absolute;right:0;top:0;bottom:0;width:55%}
+  #stick{position:absolute;width:140px;height:140px;margin:-70px 0 0 -70px;border-radius:50%;background:rgba(90,40,70,.28);border:2px solid rgba(255,255,255,.55);display:none;pointer-events:none;box-shadow:0 0 18px rgba(255,120,170,.35)}
+  #knob{position:absolute;left:50%;top:50%;width:62px;height:62px;margin:-31px 0 0 -31px;border-radius:50%;background:rgba(255,255,255,.75);box-shadow:0 0 14px rgba(255,90,150,.6)}
+  #stick.run{border-color:#ff7aa8;box-shadow:0 0 26px rgba(255,80,140,.8)}
+  #stickHint{position:absolute;left:calc(env(safe-area-inset-left) + 60px);bottom:calc(env(safe-area-inset-bottom) + 60px);width:120px;height:120px;border-radius:50%;border:2px dashed rgba(120,50,90,.55);color:rgba(120,50,90,.85);background:rgba(255,255,255,.25);display:grid;place-items:center;font-size:12px;pointer-events:none;text-shadow:0 1px 3px rgba(120,40,80,.6)}
+  .tbtn{position:absolute;border-radius:50%;display:grid;place-items:center;color:#fff;font:700 15px "Hiragino Sans",system-ui;letter-spacing:.05em;background:radial-gradient(circle at 35% 30%,rgba(140,70,110,.55),rgba(60,20,50,.55));border:2px solid rgba(255,255,255,.75);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);box-shadow:0 4px 16px rgba(120,40,80,.35);text-shadow:0 1px 4px rgba(80,20,50,.8);touch-action:none}
+  .tbtn.on{transform:scale(.92);background:radial-gradient(circle at 35% 30%,rgba(255,255,255,.8),rgba(255,140,180,.5))}
+  #bAtk{width:96px;height:96px;right:calc(env(safe-area-inset-right) + 104px);bottom:calc(env(safe-area-inset-bottom) + 40px);font-size:22px;border-color:#9fd2ff}
+  #bDash{width:70px;height:70px;right:calc(env(safe-area-inset-right) + 22px);bottom:calc(env(safe-area-inset-bottom) + 58px);border-color:#bfe6ff}
+  #bSp{width:76px;height:76px;right:calc(env(safe-area-inset-right) + 40px);bottom:calc(env(safe-area-inset-bottom) + 150px);border-color:#ffd36a;font-size:14px}
+  #bJump{width:64px;height:64px;right:calc(env(safe-area-inset-right) + 214px);bottom:calc(env(safe-area-inset-bottom) + 36px)}
+  .tsmall{position:absolute;top:calc(env(safe-area-inset-top) + 92px);right:calc(env(safe-area-inset-right) + 14px);display:flex;flex-direction:column;gap:8px}
+  .tsmall .tbtn{position:static;width:54px;height:54px;font-size:11px}
+  #helpToggle{position:fixed;left:12px;top:12px;z-index:7;display:none;width:40px;height:40px;border-radius:50%;border:0;background:rgba(255,255,255,.85);color:#7a3b58;font:800 20px system-ui;box-shadow:0 2px 8px rgba(120,60,90,.25)}
+  #helpToggle{display:block}
+  body.hidehelp #help{display:none}
+  #help{top:60px}
+  body.touch #state{top:calc(env(safe-area-inset-top) + 12px);bottom:auto;right:84px;font-size:11px}
+  #enemyBox{position:fixed;left:50%;top:14px;transform:translateX(-50%);z-index:7}
+  #swapBtn{border:0;border-radius:999px;padding:8px 16px;background:rgba(255,255,255,.88);color:#7a3b58;font:700 13px "Hiragino Sans",system-ui;box-shadow:0 2px 10px rgba(120,60,90,.25);cursor:pointer}
+  #swapBtn:disabled{opacity:.5}
+
+  #ub{position:fixed;inset:0;pointer-events:none;display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:0;z-index:30;overflow:hidden}
+  #ub.on{animation:ubFade 5.2s ease-out forwards}
+  #ub .bar{position:absolute;left:-10%;width:120%;height:22vh;top:39vh;background:linear-gradient(90deg,transparent,rgba(20,0,8,.82) 18%,rgba(20,0,8,.82) 82%,transparent);transform:skewY(-6deg) scaleX(0);transform-origin:left}
+  #ub.on .bar{animation:ubBar .45s cubic-bezier(.2,.9,.2,1) .05s forwards}
+  #ub .slash{position:absolute;left:-20%;top:50%;width:140%;height:3px;background:linear-gradient(90deg,transparent,#fff 40%,#ffd36a 55%,transparent);box-shadow:0 0 18px #ff5020,0 0 40px #ff3010;transform:rotate(-6deg) translateX(-100%)}
+  #ub.on .slash{animation:ubSlash .35s ease-in .1s forwards}
+  #ub .w{position:relative;transform:skewX(-14deg) rotate(-6deg);text-align:center;line-height:.86;font-family:"Arial Black","Impact","Helvetica Neue",sans-serif;font-weight:900;font-style:italic}
+  #ub .u{display:block;font-size:min(8.4vw,120px);letter-spacing:.32em;padding-left:.32em;background:linear-gradient(180deg,#fff 0%,#ffe9a0 45%,#d99a2a 52%,#fff2c4 100%);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 10px rgba(255,180,80,.7)) drop-shadow(0 4px 0 #3a0a00);opacity:0}
+  #ub .b{display:block;font-size:min(17vw,250px);letter-spacing:.06em;background:linear-gradient(180deg,#fff 0%,#ffd0b0 30%,#ff3a1a 55%,#8a0010 100%);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 22px rgba(255,60,20,.85)) drop-shadow(0 6px 0 #1a0004);opacity:0;position:relative}
+  #ub .b::after{content:"BREAK";position:absolute;inset:0;background:linear-gradient(105deg,transparent 35%,rgba(255,255,255,.95) 48%,transparent 60%);background-size:300% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;background-position:120% 0}
+  #ub.on .u{animation:ubU .55s cubic-bezier(.15,.9,.25,1) .18s forwards}
+  #ub.on .b{animation:ubB .5s cubic-bezier(.2,1.4,.3,1) .32s forwards}
+  #ub.on .b::after{animation:ubShine 1.1s ease-in-out 1.0s forwards}
+  #ub .sub{margin-top:2.4vh;font:700 min(2.2vw,26px) "Hiragino Mincho ProN","Yu Mincho",serif;letter-spacing:.6em;color:#ffe9c8;text-shadow:0 0 10px #ff4a20;transform:rotate(-6deg);opacity:0}
+  #ub.on .sub{animation:ubSub .8s ease-out .8s forwards}
+  @keyframes ubFade{0%{opacity:0}4%{opacity:1}82%{opacity:1}100%{opacity:0}}
+  @keyframes ubBar{to{transform:skewY(-6deg) scaleX(1)}}
+  @keyframes ubSlash{to{transform:rotate(-6deg) translateX(100%)}}
+  @keyframes ubU{0%{opacity:0;letter-spacing:1.4em;filter:blur(12px)}100%{opacity:1;letter-spacing:.32em}}
+  @keyframes ubB{0%{opacity:0;transform:scale(3.2);filter:blur(18px)}60%{opacity:1;transform:scale(.94)}100%{opacity:1;transform:scale(1)}}
+  @keyframes ubShine{to{background-position:-120% 0}}
+  @keyframes ubSub{0%{opacity:0;letter-spacing:1.4em}100%{opacity:1;letter-spacing:.6em}}
+
+  /* ===== HUD（スタイリッシュ） ===== */
+  :root{--hud-font:"Arial Black","Helvetica Neue",system-ui,sans-serif;--jp:"Hiragino Mincho ProN","Yu Mincho",serif}
+  #combo{position:fixed;right:30px;top:34%;text-align:right;opacity:0;transform:translateX(40px) skewX(-10deg);transition:opacity .2s,transform .25s cubic-bezier(.2,1.4,.3,1);pointer-events:none;z-index:8}
+  #combo.show{opacity:1;transform:skewX(-10deg)}
+  #combo .row{display:flex;align-items:flex-end;justify-content:flex-end;gap:6px}
+  #hits{display:inline-block;font:900 italic 78px/0.9 var(--hud-font);background:linear-gradient(180deg,#fff 0%,#fff 45%,#ffc6dc 55%,#ff4a8a 100%);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-stroke:1.5px rgba(70,10,40,.65);filter:drop-shadow(0 4px 0 rgba(60,0,30,.55)) drop-shadow(0 0 16px rgba(255,70,140,.55))}
+  #combo.pop #hits{animation:hitpop .22s cubic-bezier(.2,1.6,.4,1)}
+  @keyframes hitpop{0%{transform:scale(1.7) translateX(-8px);filter:brightness(2.2) drop-shadow(0 0 22px #fff)}100%{transform:none}}
+  #hitlbl{font:900 italic 20px var(--hud-font);color:#ff7aa8;letter-spacing:.12em;margin-bottom:8px;text-shadow:0 2px 0 rgba(60,0,30,.6)}
+  #rank{margin-top:4px}
+  #rank b{display:inline-block;font:900 italic 60px/1 var(--hud-font);background:linear-gradient(180deg,#fff 10%,#ffe18a 45%,#ff8a3a 70%,#ff2a6a);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-stroke:1.5px rgba(80,20,10,.6);filter:drop-shadow(0 3px 0 rgba(70,10,20,.5)) drop-shadow(0 0 18px rgba(255,140,60,.55))}
+  #rank span{display:block;font:700 20px var(--jp);letter-spacing:.45em;color:#fff;text-shadow:0 0 10px #ff4a8a,0 2px 3px #3a0a20}
+  #ctimer{height:4px;margin:6px 0 0 auto;width:180px;background:rgba(40,10,30,.45);overflow:hidden;clip-path:polygon(6px 0,100% 0,calc(100% - 6px) 100%,0 100%)}
+  #ctimer i{display:block;height:100%;width:100%;background:linear-gradient(90deg,#ff4a8a,#ffd36a);transform-origin:right}
+  /* 奥義ゲージ */
+  #ult{margin:12px 0 0 auto;width:220px;position:relative}
+  #ult .cap{display:flex;justify-content:space-between;font:900 italic 11px var(--hud-font);letter-spacing:.18em;color:#ffe2b0;text-shadow:0 1px 3px #3a0a10}
+  #ult .g{height:10px;margin-top:3px;background:rgba(30,6,14,.6);border:1px solid rgba(255,220,160,.55);clip-path:polygon(8px 0,100% 0,calc(100% - 8px) 100%,0 100%);overflow:hidden;position:relative}
+  #ult .g i{position:absolute;inset:0;width:0;background:linear-gradient(90deg,#ff3a10,#ffb040,#fff0b0);box-shadow:0 0 12px #ff7a20}
+  #ult .g::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0 18px,rgba(0,0,0,.35) 18px 20px)}
+  #ult.ready .g{border-color:#fff;animation:ultglow .6s ease-in-out infinite alternate}
+  #ult.ready .g i{background:linear-gradient(90deg,#ff2a0a,#ffd36a,#fff,#ffd36a,#ff2a0a);background-size:200% 100%;animation:ultflow 1s linear infinite}
+  @keyframes ultglow{from{box-shadow:0 0 6px #ff7a20}to{box-shadow:0 0 22px #ffd36a,0 0 40px #ff4a10}}
+  @keyframes ultflow{to{background-position:-200% 0}}
+  #ultPrompt{position:fixed;left:50%;bottom:22%;transform:translateX(-50%) skewX(-10deg);z-index:9;pointer-events:none;opacity:0;display:flex;align-items:center;gap:12px;padding:10px 26px 10px 14px;background:linear-gradient(90deg,rgba(40,4,10,.0),rgba(40,4,10,.85) 12%,rgba(40,4,10,.85) 88%,rgba(40,4,10,0));font:900 italic 22px var(--hud-font);color:#fff;letter-spacing:.08em;text-shadow:0 0 12px #ff5a20}
+  #ultPrompt.on{opacity:1;animation:ultpr .45s ease-in-out infinite alternate}
+  #ultPrompt kbd{display:inline-grid;place-items:center;min-width:44px;height:44px;padding:0 8px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ff8a7a,#c8102e);border:2px solid #fff;font:900 22px var(--hud-font);color:#fff;transform:skewX(10deg);box-shadow:0 0 18px #ff3a3a}
+  #ultPrompt small{display:block;font:700 12px var(--jp);letter-spacing:.4em;color:#ffd9a0}
+  @keyframes ultpr{from{transform:translateX(-50%) skewX(-10deg) scale(1)}to{transform:translateX(-50%) skewX(-10deg) scale(1.06)}}
+  /* HPゲージ */
+  .hp{display:none;position:fixed;z-index:7;pointer-events:none}
+  .hp .plate{display:flex;align-items:baseline;gap:10px;margin-bottom:4px;transform:skewX(-12deg)}
+  .hp .nm{font:700 15px var(--jp);letter-spacing:.35em;color:#fff;text-shadow:0 0 8px rgba(80,160,255,.8),0 2px 3px #000}
+  .hp .tag{font:900 italic 10px var(--hud-font);letter-spacing:.2em;padding:2px 8px;background:#fff;color:#14203a}
+  .hp .num{margin-left:auto;font:900 italic 14px var(--hud-font);color:#fff;text-shadow:0 2px 3px #000;letter-spacing:.05em}
+  .hp .frame{position:relative;height:16px;transform:skewX(-24deg);background:rgba(8,10,24,.72);border:1px solid rgba(255,255,255,.75);box-shadow:0 0 0 2px rgba(0,0,0,.35),0 6px 16px rgba(0,0,0,.35);overflow:hidden}
+  .hp .lag{position:absolute;inset:2px auto 2px 2px;width:calc(100% - 4px);background:#fff;transition:width .55s cubic-bezier(.4,0,.2,1) .35s}
+  .hp .fill{position:absolute;inset:2px auto 2px 2px;width:calc(100% - 4px);transition:width .12s}
+  .hp .frame::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0 calc(10% - 2px),rgba(0,0,0,.45) calc(10% - 2px) 10%);pointer-events:none}
+  .hp .gloss{position:absolute;left:0;right:0;top:2px;height:35%;background:linear-gradient(180deg,rgba(255,255,255,.55),rgba(255,255,255,0));pointer-events:none}
+  .hp.hit .frame{animation:hpshake .25s}
+  @keyframes hpshake{0%,100%{translate:0}25%{translate:-4px 1px}50%{translate:3px -1px}75%{translate:-2px 0}}
+  #ehp{left:50%;top:58px;width:min(620px,72vw);transform:translateX(-50%)}
+  #ehp .fill{background:linear-gradient(90deg,#1450ff,#2aa8ff 55%,#9ff0ff)}
+  #ehp .lag{background:linear-gradient(90deg,#ff3a5a,#ffb0a0)}
+  #ehp.low .fill{background:linear-gradient(90deg,#ff1a3a,#ff7a3a 60%,#ffd36a);animation:lowp .5s ease-in-out infinite alternate}
+  @keyframes lowp{to{filter:brightness(1.5)}}
+  #php{left:26px;bottom:calc(env(safe-area-inset-bottom) + 22px);width:min(330px,42vw)}
+  #php .fill{background:linear-gradient(90deg,#ff2a6a,#ff7aa8 60%,#ffd0de)}
+  #php .lag{background:#fff}
+  #php .nm{text-shadow:0 0 8px rgba(255,90,150,.9),0 2px 3px #000}
+  body.touch #php{left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom) + 10px)}
+  /* ダメージ数値 */
+  .dmg{position:absolute;left:0;top:0;white-space:nowrap;will-change:transform,opacity;font:900 italic 24px var(--hud-font);letter-spacing:-.02em;background:linear-gradient(180deg,#fff 0 40%,var(--c) 60% 100%);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-stroke:1.2px rgba(20,8,24,.85);filter:drop-shadow(0 3px 0 rgba(10,4,16,.7))}
+  .dmg.crit{font-size:40px;background:linear-gradient(180deg,#fff 0 30%,#ffe27a 50%,#ff7a20 75%,#ff2a4a);-webkit-background-clip:text;background-clip:text;filter:drop-shadow(0 3px 0 rgba(60,10,0,.8)) drop-shadow(0 0 14px rgba(255,140,40,.8))}
+  .dmg.crit::before{content:"CRITICAL";position:absolute;left:50%;top:-14px;transform:translateX(-50%);font:900 italic 11px var(--hud-font);letter-spacing:.25em;color:#fff;-webkit-text-stroke:0;background:#ff2a4a;padding:1px 6px;filter:none}
+  .dmg.ult{font-size:64px}
+  .dmg.ult::before{content:"ULTIMATE";background:#ff5a10}
+  .dmg.ally{font-size:18px;opacity:.9}
+  /* ライフ */
+  #plives{display:inline-block;margin-left:10px;font:900 15px "Arial Black",sans-serif;letter-spacing:3px;color:#ff4a6a;text-shadow:0 0 6px rgba(255,60,90,.7)}
+  #plives i{font-style:normal;color:rgba(255,255,255,.22);text-shadow:none}
+  /* GAME OVER */
+  #gameover{position:fixed;inset:0;z-index:40;padding:2vh 3vw;box-sizing:border-box;display:none;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(ellipse at center,rgba(20,4,12,.72),rgba(0,0,0,.92));color:#fff;text-align:center;font-family:"Hiragino Mincho ProN","Yu Mincho",serif;pointer-events:auto}
+  #gameover.on{display:flex;animation:goIn 1.2s ease-out}
+  #gameover .t{font:900 italic min(9vw,13vh,110px) "Arial Black","Impact",sans-serif;letter-spacing:.12em;background:linear-gradient(180deg,#fff,#ff8aa0 50%,#8a0020);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 18px rgba(255,40,80,.6))}
+  #gameover .cap{margin-top:3vh;font-size:min(2.2vw,22px);letter-spacing:.5em;color:#ffe2b0;opacity:0;animation:goUp .8s ease-out 1.0s forwards}
+  #gameover .rk{font:900 italic min(26vw,34vh,300px)/1 "Arial Black","Impact",sans-serif;background:linear-gradient(180deg,#fff 0%,#ffe9a0 40%,#e0a030 60%,#fff2c4 100%);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 30px rgba(255,200,80,.75));opacity:0;transform:scale(2.4);animation:goRank .7s cubic-bezier(.2,1.5,.3,1) 1.4s forwards}
+  #gameover .rk.x{background:conic-gradient(from 0deg,#fff,#ffd36a,#ff5ad0,#7ad8ff,#b5ff8a,#fff);-webkit-background-clip:text;background-clip:text;filter:drop-shadow(0 0 40px rgba(255,255,255,.9)) drop-shadow(0 0 80px rgba(255,180,255,.7))}
+  #gameover .rt{font-size:min(3.4vw,36px);letter-spacing:.4em;color:#ffe9c8;text-shadow:0 0 12px #ff8a40;opacity:0;animation:goUp .8s ease-out 2.0s forwards}
+  #gameover .pr{margin-top:2.4vh;font-size:min(2.4vw,24px);letter-spacing:.12em;color:#fff;opacity:0;animation:goUp 1s ease-out 2.5s forwards}
+  #gameover .st{margin-top:3vh;font:700 min(1.7vw,17px) sans-serif;letter-spacing:.15em;color:#cfd8ff;opacity:0;animation:goUp 1s ease-out 3.0s forwards}
+  #gameover .st b{color:#ffd36a;margin:0 .3em}
+  #gameover .rs{margin-top:4vh;font:700 min(1.6vw,16px) sans-serif;letter-spacing:.3em;color:#fff;opacity:0;animation:goBlink 1.4s ease-in-out 3.8s infinite}
+  #gameover.win{background:radial-gradient(ellipse at center,rgba(10,20,40,.8),rgba(0,0,8,.94))}
+  #gameover.win .t{font-size:min(7.4vw,11vh,96px);background:linear-gradient(180deg,#fff 0%,#bfe8ff 40%,#ffd36a 60%,#fff6d0 100%);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 22px rgba(120,200,255,.7)) drop-shadow(0 0 40px rgba(255,200,80,.5));animation:goWin 1s cubic-bezier(.2,1.3,.3,1)}
+  @keyframes goWin{from{opacity:0;transform:scale(1.6);letter-spacing:.5em}to{opacity:1;transform:none}}
+  @keyframes goIn{from{opacity:0}to{opacity:1}}
+  @keyframes goUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+  @keyframes goRank{to{opacity:1;transform:scale(1)}}
+  @keyframes goBlink{0%,100%{opacity:.25}50%{opacity:1}}
+  /* 隠し最高評価 X */
+  #xrank{position:fixed;inset:0;z-index:35;pointer-events:none;display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;overflow:hidden}
+  #xrank.on{display:flex;animation:xFade 9s ease-out forwards}
+  #xrank::before{content:"";position:absolute;inset:-50%;background:repeating-conic-gradient(from 0deg,rgba(255,240,180,.16) 0 6deg,transparent 6deg 18deg);animation:xSpin 9s linear}
+  #xrank .x{position:relative;font:900 italic min(40vw,52vh)/0.9 "Arial Black","Impact",sans-serif;background:conic-gradient(from 90deg,#fff,#ffd36a,#ff6ad8,#8ad8ff,#c0ff9a,#fff);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 30px #fff) drop-shadow(0 0 90px rgba(255,200,120,.9));transform:scale(4) rotate(-20deg);opacity:0;animation:xIn 1s cubic-bezier(.15,1.4,.3,1) .1s forwards}
+  #xrank .k{position:relative;font:700 min(2.4vw,26px) "Hiragino Mincho ProN","Yu Mincho",serif;letter-spacing:.8em;color:#fff3d0;text-shadow:0 0 12px #ffb040;opacity:0;animation:goUp .8s ease-out 1.0s forwards}
+  #xrank .n{position:relative;margin-top:1.6vh;font:900 min(5vw,58px) "Hiragino Mincho ProN","Yu Mincho",serif;letter-spacing:.3em;background:linear-gradient(180deg,#fff,#ffe08a 60%,#e09a20);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 14px rgba(255,190,80,.9));opacity:0;animation:goUp .9s ease-out 1.6s forwards}
+  #xrank .m{position:relative;margin-top:2vh;font:700 min(2.2vw,24px) "Hiragino Mincho ProN","Yu Mincho",serif;letter-spacing:.2em;color:#fff;text-shadow:0 0 10px #ff8a40,0 0 2px #000;opacity:0;animation:goUp 1s ease-out 2.4s forwards}
+  @keyframes xIn{to{opacity:1;transform:scale(1) rotate(0)}}
+  @keyframes xFade{0%{opacity:1}85%{opacity:1}100%{opacity:0}}
+  @keyframes xSpin{to{transform:rotate(60deg)}}
+  #rank.x b{background:conic-gradient(from 90deg,#fff,#ffd36a,#ff6ad8,#8ad8ff,#fff);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 10px #fff)}
+  /* 斜体＋グラデーション文字は右端がはみ出して切れるので、右に余白を足す */
+  #hits,#rank b,#gameover .t,#gameover .rk,#xrank .x,#ub .u,#ub .b{padding-right:.18em;padding-left:.04em;overflow:visible}
+  #combo{right:18px}
+</style>
+</head>
+<body>
+<div id="boot"><div class="lg">MOTHER<b>.</b></div><div class="ht"></div><div class="bar"><i id="bootI"></i></div><div class="tx" id="bootT">NOW LOADING</div><div class="er" id="bootE"></div></div>
+<script>(function(){var n=0,N=29,dead=false;window.__bootP=function(){n++;var i=document.getElementById('bootI');if(i)i.style.width=Math.min(95,Math.round(n/N*95))+'%';};
+window.__bootDone=function(){if(dead)return;dead=true;var b=document.getElementById('boot');if(!b)return;document.getElementById('bootI').style.width='100%';setTimeout(function(){b.classList.add('off');setTimeout(function(){b.remove();},800);},250);};
+window.__bootErr=function(m){var e=document.getElementById('bootE');if(e)e.textContent=m;};
+window.addEventListener('error',function(e){if(!dead&&e&&e.message)window.__bootErr('読み込みエラー: '+e.message);});
+setTimeout(function(){window.__bootDone();},60000);})();</script>
+<div id="app"></div>
+<div id="loading">セツナを読み込み中…</div>
+<div id="help" class="panel">
+  <h1>セツナ 操作方法 <span id="devname"></span></h1>
+  <table>
+    <tr><td>移動</td><td data-key="move"></td></tr>
+    <tr><td>走る</td><td data-key="runtxt"></td></tr>
+    <tr><td><b>攻撃（連打でコンボ）</b></td><td><kbd data-key="attack"></kbd></td></tr>
+    <tr><td><b>迅雷ダッシュ（7m）</b></td><td><kbd data-key="dash"></kbd> 攻撃でキャンセル</td></tr>
+    <tr><td><b>必殺・月華鎖葬</b></td><td><kbd data-key="special"></kbd> 攻撃でキャンセル</td></tr>
+    <tr><td>ジャンプ</td><td><kbd data-key="jump"></kbd></td></tr>
+    <tr><td>手を振る</td><td><kbd data-key="wave"></kbd></td></tr>
+    <tr><td>背伸び</td><td><kbd data-key="stretch"></kbd></td></tr>
+    <tr><td>カメラ</td><td data-key="camera"></td></tr>
+    <tr><td>位置リセット</td><td><kbd data-key="reset"></kbd></td></tr>
+    <tr><td><b>相手の切り替え</b></td><td><kbd data-key="swap"></kbd> 木人 → ドラゴン → ゴーレム軍団</td></tr>
+    <tr><td><b>クラウド特殊必殺・静止世界</b></td><td><kbd>G</kbd> ／ コントローラー <kbd>十字↑</kbd> ／ タッチ「時止め」：セピアの静止空間で敵と弾を8秒止める（味方は動ける）</td></tr>
+    <tr><td><b>ターゲット切り替え</b></td><td>コントローラー <kbd>RT</kbd> 次 ／ <kbd>LT</kbd> 前　キーボード <kbd>X</kbd> 次 ／ <kbd>Z</kbd> 前（闇のスピリットは対象外）</td></tr>
+    <tr><td><b>共闘：クラウド</b></td><td><kbd data-key="ally"></kbd> 呼び出す／戻す</td></tr>
+    <tr><td><b>BGM</b></td><td><kbd>M</kbd> または左上の ♪ でON/OFF</td></tr>
+    <tr><td><b>効果音</b></td><td><kbd>N</kbd> または左上の SE でON/OFF</td></tr>
+    <tr><td><b>操作キャラ交代</b></td><td><kbd data-key="chr"></kbd> セツナ → トワ → チョコ → ハーバー → テトラ → ゼクス → セツナ（チョコ・ハーバー・テトラ・ゼクスのときは直前のキャラが仲間として残る）</td></tr>
+    <tr><td><b>チョコ：虚空演算機</b></td><td>移動は自動（最も近い敵から8m）。十字キー／矢印・WASD で選ぶ、<kbd>A</kbd>／<kbd>Space</kbd> 押す、<kbd>Y</kbd>／<kbd>K</kbd> 実行、<kbd>X</kbd>／<kbd>F</kbd> 分析（3秒）、<kbd>RB</kbd> クリア、<kbd>Backspace</kbd> 1つ戻す、<kbd>LB</kbd>／<kbd>Delete</kbd> 要素を捨てる、<kbd>E</kbd> ドロー（言葉か−9〜9の数字を2枚・8秒ごと。使うと消える1回きりの要素）。式は要素1〜3個（× ÷ を先に計算、√・±反転・|x|・交換は直前の要素にかかる）、99HITで <kbd>B</kbd>／<kbd>L</kbd> オーバードライブ（30秒、敵ライフ値100の上限と9999の制限が外れ、交換が使える）。演算ごとに3〜8秒のクールダウン（オーバードライブ中はなし）。演算子は演算ごとにランダムで絞られる（増やす手段・減らす手段は必ず1つずつ以上）。演算するたびに HEAT が溜まり、100で OVERHEAT＝15秒行動不能（HEAT値も要素として演算で下げられる）</td></tr>
+    <tr><td><b>ハーバー：現実</b></td><td>現実では無力。<kbd data-key="attack"></kbd> 鏡を置く（目標を囲む立体の九芒星の陣形に9枚、重ならない。移動しながらだと目の前に）。鏡に映った敵は1枚につき2秒に1HIT。<kbd data-key="special"></kbd> ブラックスポットライト（鏡から鏡へ乱反射する黒い三角錐の鎖。鎖の線・鏡の囲みの中の敵は動けず攻撃もできない＝拘束、8秒）。<kbd data-key="dash"></kbd> 迅雷ダッシュ（ニュートラルで押すと距離を問わず最寄りの鏡へ飛び込む（方向入力ありなら迅雷ダッシュ））</td></tr>
+    <tr><td><b>ハーバー：鏡の世界</b></td><td>一人称。移動は高速、視点はドラッグ／右スティック。<kbd data-key="attack"></kbd> 巨大なクロー斬撃（5段・敵へ自動で踏み込む、攻撃中にホーミング弾7発）。鏡に映った敵だけを一方的に攻撃でき、敵は攻撃できない。<kbd data-key="dash"></kbd> 5m以内の鏡から現実へ（出てくるときに一撃）／鏡がなければブリンク。<kbd>Y</kbd>／<kbd>F</kbd> 最寄りの鏡から現実へ。現実へ出ると鏡はすべて砕ける。鏡の中のダメージは戻ったときに判定：目標未達＝無効＋鏡像化10秒（操作が逆）、目標1＝半分反映＋鏡像化5秒＋反射の弾幕、目標2＝全部反映。鏡像化中は鏡の世界へ入れない。鏡の世界では敵の攻撃・弾は一切なし。鏡の世界でスポットライトの鎖が張られている間は、ブラックミラースパイダー（動かない8mの親蜘蛛と鎖を走る2mの子蜘蛛8匹）が敵に弾を吐く（鏡の世界では鎖は脱出まで消えない）。99HITで <kbd data-key="special"></kbd> 奥義・鏡映破壊（鏡の世界ごと敵と街を粉砕して現実へ戻る）</td></tr>
+    <tr><td><b>テトラ ✕ トリア</b></td><td>操作はテトラ、トリアはオート（ブロックを最大9個生み出し、足場にして立体の直線軌道で飛び回り、敵を切り抜ける）。<kbd data-key="attack"></kbd> ブロックの<b>集積</b>（敵の上に3×3で集めて押しつぶす）と<b>分解炸裂</b>（爆発 → 元の形に戻って展開）を交互に。<kbd data-key="special"></kbd> <b>エネミートレース</b>：ターゲットしていた敵の<b>直前の行動</b>（モーションと弾）をトリアの位置に法線トレースの敵で再現して攻撃（トレース像は地上に、対象と距離をとって出る）。トレース中にもう一度 <kbd data-key="special"></kbd> で<b>複製進化</b>（粒子で再構築して1.3倍 → 敵ごとの全ブロック連携攻撃：竜＝ブレス＋ブロック弾幕／フレア＝残像コンボ＋収縮爆発／アイス＝巨大な放射衝撃波 → トリアに戻る）。<kbd data-key="dash"></kbd> 方向入力ありで迅雷ダッシュ、ニュートラルで安全な場所へテレポート（敵弾の誘導を切る。敵から最も離れた空中のブロックの上を優先。ブロックの上に立てる）。99HIT（奥義が撃てる状態）で必殺技ボタンを押すと、トレースせず直接<b>奥義・螺旋</b>。被ダメージはテトラだけ</td></tr>
+    <tr><td><b>ゼクス（ファンド・リーパー）</b></td><td>攻撃はHPを削らず<b>債務</b>を積む（敵ライフバーの紫の縞）。<b>利率＝債務÷敵の現在の体力</b>。10秒ごとに<b>複利</b>で利息（現在の体力が大きい敵ほど利息も打撃も効きにくい）、利率100%で自動的に<b>TOB成立 → 強制執行</b>（ドラゴンのアナザーディメンジョン中は利率の上がり方が1/8、メイドインヘブン中は1/32）（デット・ブローカーの鐘3回 → 破産宣告書を叩きつけて債務をそのままダメージに）。<kbd data-key="attack"></kbd> 信用打撃（<b>地上10連コンボ</b>（左右に体を振るデンプシーロールで潜り込む）：ジャブ→ストレート→フック→回し蹴り→スピンバックナックル→飛び膝→前蹴り→後ろ回し蹴り→旋風脚→双掌「追証」。全段、標的へ自動で追従して踏み込む）、<kbd data-key="dash"></kbd> 方向入力ありで<b>迅雷ダッシュ</b>、ニュートラルで<b>肢曲を自動で3連続</b>（敵の周りを同じ向きに回り込みながら分身を残す。敵弾は分身を狙う）、<b>肢曲中にもう一度</b> <kbd data-key="dash"></kbd> で一瞬で<b>敵の背後</b>へ（1.5秒間、債務×1.5）。敵の攻撃を寸前でかわすと<b>見切り</b>＝好況（利息タイマー−2秒）。被弾直後の <kbd data-key="dash"></kbd> で<b>損切り</b>（ダメージ無効）。<kbd data-key="special"></kbd> 敵の大技の構え中なら<b>空売りカウンター</b>（信用不安＝次の利息で上乗せ）、それ以外は<b>利確</b>（積んだ債務をレバレッジ倍率 ×1／×1.35／×1.9 で敵の体力への実ダメージにして債務は0に。体力は1残る。体力が減るほど利率が上がりやすくなるので、大きな敵は利確で削ってからTOBを狙う。アイスゴーレムのような小さい敵はいきなりTOBまで届く）。<kbd>E</kbd> レバレッジ 1→2→5倍（打撃・利息の債務が倍になるかわりに被ダメージも×1.25／×2、5倍で体力30%を割ると<b>追証</b>で1倍に強制解除）、<kbd>Q</kbd> 煽り（バブル相場：利率×1.5、敵が激しくなる）、<kbd>F</kbd> インサイダー（敵の攻撃が赤い予測線で見える）。被弾は債務を返済して相殺、債務0で被弾すると<b>強制ロスカット</b>（追加ダメージ＋スキル封印6秒）。利率25/50/75%で<b>配当金</b>（拾うと攻撃強化＋回復）、敵から12m以上離れ続けると不況。移動は直線でなく流れるように弧を描く</td></tr>
+    <tr><td><b>ドラゴン：重力反転</b></td><td>15秒間、全員が18m上の透明な天井へ「空に落ちる」。ドラゴンは45発のホーミング弾幕を撃ち、こちらの攻撃は届かない（迅雷ダッシュで誘導を切ってしのぐ。チョコは回避の演算だけ有効）</td></tr>
+    <tr><td><b>ドラゴン：狂暴化</b></td><td>体力50%以下で「アナザーディメンジョン」（討伐まで永続）。街と足場が消え、宇宙に浮かぶ30mのキューブに閉じ込められる。15秒ごとにキューブが回転して重力と足場が変わる。拡散レーザー（反射）・重力強化（移動とダッシュが半分）・咆哮の全体スタン5秒・小さな竜3体の紅の弾幕・ホーミング光弾</td></tr>
+    <tr><td><b>ドラゴン：メイドインヘブン</b></td><td>狂暴化中に体力25%以下で最終段階（狂暴化を経ずに体力0にしても、25%まで戻って発動）。発動から20秒間は無敵。メイドインヘブン中に体力0にすると、一度だけ<b>体力33%で復活・再生</b>（再生中の3秒は無敵）。キューブの外の世界が15秒ごとに始まりへ遷移（時の逆流 → 逆ビッグバン → 無 → 深淵の大聖堂 → 光の岩窟 → 泡の世界 → 巨大な心臓「マザー」で固定）。マザーに着くと<b>カウント30</b>：10秒ごとにゲームが3秒止まり、マザーが鼓動しながらエネルギーを溜める。0になるとマザーの超高圧エネルギー粒子砲で、プレイヤーも仲間も竜も闇スピもすべて消滅して<b>GAME OVER</b>（それまでに倒す）。竜の新しい攻撃「万物流転」：プレイヤーと仲間を5秒間、素粒子の魚・鳥・鯨に変える（移動とダッシュのみ、攻撃不可）</td></tr>
+    <tr><td><b>仲間（もう一人）</b></td><td><kbd data-key="partner"></kbd> 呼び出す／戻す（AIで自動戦闘）</td></tr>
+    <tr><td>操作説明 ON/OFF</td><td><kbd data-key="help"></kbd> / 左上の ？</td></tr>
+  </table>
+  <div>攻撃連打：切り抜け×2 → 打ち上げ → 空中切り抜け×2 → 墜天</div>
+  <div id="pad"></div>
+</div>
+<div id="state" class="panel">いまのモーション<br><span id="motion">—</span></div>
+<canvas id="speed" style="position:fixed;inset:0;pointer-events:none"></canvas><div id="flash"></div><div class="lb" style="top:0"></div><div class="lb" style="bottom:0"></div><div id="movename"></div><div id="xrank"><div class="x">X</div><div class="k">隠 し 最 高 評 価</div><div class="n">神域到達</div><div class="m"></div></div><div id="gameover"><div class="t">GAME OVER</div><div class="cap">あなたの最高評価</div><div class="rk">D</div><div class="rt"></div><div class="pr"></div><div class="st"></div><div class="rs">ENTER ／ Ⓐ ／ タップでもう一度</div></div><div id="ub"><div class="bar"></div><div class="slash"></div><div class="w"><span class="u">ULTIMATE</span><span class="b">BREAK</span></div><div class="sub">奥義・太陽風 ── クレムゾンフレア</div></div>
+<div id="enemyBox"><button id="swapBtn" disabled>相手：<span id="enemyName">木人</span> ⇄</button></div>
+<div id="ehp" class="hp"><div class="plate"><span class="tag">BOSS</span><span class="nm" id="ehpName">蒼鱗の竜</span><span class="num" id="ehpNum"></span></div><div class="frame"><div class="lag" id="ehpLag"></div><div class="fill" id="ehpbar"></div><div class="gloss"></div></div></div>
+<div id="php" class="hp"><div class="plate"><span class="tag" id="phpTag">PLAYER</span><span class="nm" id="phpName">セツナ</span><span class="num" id="phpNum"></span></div><div class="frame"><div class="lag" id="phpLag"></div><div class="fill" id="phpbar"></div><div class="gloss"></div></div></div>
+<div id="ultPrompt"><kbd id="ultKey">B</kbd><div id="ultName">奥義・太陽風<small>SUN WIND ─ CRIMSON FLARE</small></div></div>
+<button id="helpToggle">？</button>
+<div id="touch">
+  <div id="tzoneL"></div><div id="tzoneR"></div>
+  <div id="stickHint">ここを触って<br>移動</div>
+  <div id="stick"><div id="knob"></div></div>
+  <div class="tbtn" id="bJump" data-b="jump">跳</div>
+  <div class="tbtn" id="bAtk" data-b="attack">斬</div>
+  <div class="tbtn" id="bDash" data-b="dash">迅雷</div>
+  <div class="tbtn" id="bSp" data-b="special">必殺</div>
+  <div class="tsmall"><div class="tbtn" data-b="wave">手を<br>振る</div><div class="tbtn" data-b="stretch">背伸び</div><div class="tbtn" data-b="reset">リセット</div><div class="tbtn" data-b="swap">相手</div><div class="tbtn" data-b="tnext">標的</div><div class="tbtn" data-b="tstop">時止め</div><div class="tbtn" data-b="ally">共闘</div><div class="tbtn" data-b="chr">交代</div><div class="tbtn" data-b="partner">仲間</div></div>
+</div>
+<div id="combo"><div class="row"><span id="hits">0</span><span id="hitlbl">HITS</span></div><div id="ctimer"><i id="ctimerI"></i></div><div id="rank"></div><div id="ult"><div class="cap"><span>ULTIMATE</span><span id="ultTxt">0 / 99</span></div><div class="g"><i id="ultI"></i></div></div></div>
+<script src="assets/setsuna.js?v=0773a185" onload="window.__bootP&&__bootP()"></script>
+<script src="assets/dragon.js?v=8beae4cd" onload="window.__bootP&&__bootP()"></script>
+<script src="assets/dark_spirit.js?v=4decea79" onload="window.__bootP&&__bootP()"></script>
+<script src="assets/cloud.js?v=3dccb559" onload="window.__bootP&&__bootP()"></script>
+<script src="assets/compass.js?v=90c5c66a" onload="window.__bootP&&__bootP()"></script>
+<script src="assets/towa.js?v=13497617" onload="window.__bootP&&__bootP()"></script>
+<script src="assets/ice_golem.js?v=8b624d77" onload="window.__bootP&&__bootP()"></script>
+<script src="assets/flare_golem.js?v=dbc2a864" onload="window.__bootP&&__bootP()"></script>
+<script src="assets/choco.js?v=84046365" onload="window.__bootP&&__bootP()"></script>
+<script src="assets/harbor.js?v=f9102544" onload="window.__bootP&&__bootP()"></script>
+<script src="assets/harbor_mirror.js?v=5423c146" onload="window.__bootP&&__bootP()"></script>
+<script src="assets/spider.js?v=6aa5676a" onload="window.__bootP&&__bootP()"></script>
+<script src="assets/tetra.js?v=4650bf24" onload="window.__bootP&&__bootP()"></script>
+<script src="assets/tria.js?v=251d1f29" onload="window.__bootP&&__bootP()"></script>
+<script src="assets/block.js?v=8265f5e1" onload="window.__bootP&&__bootP()"></script>
+<script src="assets/zex.js?v=96a64792" onload="window.__bootP&&__bootP()"></script>
+<script src="assets/mih_canyon.js?v=109e9016" onload="window.__bootP&&__bootP()"></script>
+<script src="assets/mih_cavern.js?v=00902b6f" onload="window.__bootP&&__bootP()"></script>
+<script src="assets/mih_bubble.js?v=e646f48a" onload="window.__bootP&&__bootP()"></script>
+<script src="assets/mih_cathedral.js?v=5ab2aeb9" onload="window.__bootP&&__bootP()"></script>
+<script src="assets/mih_mother.js?v=2fe460d5" onload="window.__bootP&&__bootP()"></script>
+<script src="assets/pot_white.js?v=4d4d7963" onload="window.__bootP&&__bootP()"></script>
+<script src="assets/pot_red.js?v=0c22917b" onload="window.__bootP&&__bootP()"></script>
+<script src="assets/colony.js?v=ca8b1269" onload="window.__bootP&&__bootP()"></script>
+<script src="assets/title.js?v=b2333702" onload="window.__bootP&&__bootP()"></script>
+<script src="assets/icons.js?v=b5013d92" onload="window.__bootP&&__bootP()"></script>
+<script src="assets/bgm.js?v=32eba4fa" onload="window.__bootP&&__bootP()"></script>
+<script src="assets/sfx.js?v=867bb993" onload="window.__bootP&&__bootP()"></script>
+<script src="game/game.js?v=63b939a2" onload="window.__bootP&&__bootP()"></script>
+</body>
+</html>
