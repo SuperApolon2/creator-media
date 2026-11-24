@@ -57,7 +57,13 @@
   #bSp{width:76px;height:76px;right:calc(env(safe-area-inset-right) + 40px);bottom:calc(env(safe-area-inset-bottom) + 150px);border-color:#ffd36a;font-size:14px}
   #bJump{width:64px;height:64px;right:calc(env(safe-area-inset-right) + 214px);bottom:calc(env(safe-area-inset-bottom) + 36px)}
   .tsmall{position:absolute;top:calc(env(safe-area-inset-top) + 92px);right:calc(env(safe-area-inset-right) + 14px);display:flex;flex-direction:column;gap:8px}
-  .tsmall .tbtn{position:static;width:54px;height:54px;font-size:11px}
+  .tsmall .tbtn{position:static;width:54px;height:54px;font-size:11px;text-align:center;line-height:1.15}
+  /* RPG（コロニー防衛）中のタッチボタン：使えないものは隠す。チョコ（虚空演算機）中とコロニー画面ではパッドごと隠す */
+  .tbtn .zx,.tbtn.zxOnly{display:none} body.tzex .tbtn .zx{display:inline} body.tzex .tbtn .nz{display:none} body.tzex .tbtn.zxOnly{display:grid}
+  body.trpg .tbtn.nr{display:none} body.trpg:not(.tzex) .tbtn[data-b=wave],body.trpg:not(.tzex) .tbtn[data-b=stretch]{display:none}
+  body.trpg:not(.tnpc) .tbtn.npcOnly{display:none} body.trpg:not(.tmulti) .tbtn.multiOnly{display:none}
+  body.tchoco #touch,body.thub #touch{display:none!important}
+  body.touch #zxHud{bottom:auto!important;top:calc(env(safe-area-inset-top) + 84px)!important;left:calc(env(safe-area-inset-left) + 12px)!important} /* タッチ時はゼクスの表示を左上へ（左下はスティック） */
   #helpToggle{position:fixed;left:12px;top:12px;z-index:7;display:none;width:40px;height:40px;border-radius:50%;border:0;background:rgba(255,255,255,.85);color:#7a3b58;font:800 20px system-ui;box-shadow:0 2px 8px rgba(120,60,90,.25)}
   #helpToggle{display:block}
   body.hidehelp #help{display:none}
@@ -190,7 +196,7 @@
 </head>
 <body>
 <div id="boot"><div class="lg">MOTHER<b>.</b></div><div class="ht"></div><div class="bar"><i id="bootI"></i></div><div class="tx" id="bootT">NOW LOADING</div><div class="er" id="bootE"></div></div>
-<script>(function(){var n=0,N=29,dead=false;window.__bootP=function(){n++;var i=document.getElementById('bootI');if(i)i.style.width=Math.min(95,Math.round(n/N*95))+'%';};
+<script>(function(){var n=0,N=7,dead=false;window.__bootP=function(){n++;var i=document.getElementById('bootI');if(i)i.style.width=Math.min(95,Math.round(n/N*95))+'%';};
 window.__bootDone=function(){if(dead)return;dead=true;var b=document.getElementById('boot');if(!b)return;document.getElementById('bootI').style.width='100%';setTimeout(function(){b.classList.add('off');setTimeout(function(){b.remove();},800);},250);};
 window.__bootErr=function(m){var e=document.getElementById('bootE');if(e)e.textContent=m;};
 window.addEventListener('error',function(e){if(!dead&&e&&e.message)window.__bootErr('読み込みエラー: '+e.message);});
@@ -221,7 +227,7 @@ setTimeout(function(){window.__bootDone();},60000);})();</script>
     <tr><td><b>ハーバー：現実</b></td><td>現実では無力。<kbd data-key="attack"></kbd> 鏡を置く（目標を囲む立体の九芒星の陣形に9枚、重ならない。移動しながらだと目の前に）。鏡に映った敵は1枚につき2秒に1HIT。<kbd data-key="special"></kbd> ブラックスポットライト（鏡から鏡へ乱反射する黒い三角錐の鎖。鎖の線・鏡の囲みの中の敵は動けず攻撃もできない＝拘束、8秒）。<kbd data-key="dash"></kbd> 迅雷ダッシュ（ニュートラルで押すと距離を問わず最寄りの鏡へ飛び込む（方向入力ありなら迅雷ダッシュ））</td></tr>
     <tr><td><b>ハーバー：鏡の世界</b></td><td>一人称。移動は高速、視点はドラッグ／右スティック。<kbd data-key="attack"></kbd> 巨大なクロー斬撃（5段・敵へ自動で踏み込む、攻撃中にホーミング弾7発）。鏡に映った敵だけを一方的に攻撃でき、敵は攻撃できない。<kbd data-key="dash"></kbd> 5m以内の鏡から現実へ（出てくるときに一撃）／鏡がなければブリンク。<kbd>Y</kbd>／<kbd>F</kbd> 最寄りの鏡から現実へ。現実へ出ると鏡はすべて砕ける。鏡の中のダメージは戻ったときに判定：目標未達＝無効＋鏡像化10秒（操作が逆）、目標1＝半分反映＋鏡像化5秒＋反射の弾幕、目標2＝全部反映。鏡像化中は鏡の世界へ入れない。鏡の世界では敵の攻撃・弾は一切なし。鏡の世界でスポットライトの鎖が張られている間は、ブラックミラースパイダー（動かない8mの親蜘蛛と鎖を走る2mの子蜘蛛8匹）が敵に弾を吐く（鏡の世界では鎖は脱出まで消えない）。99HITで <kbd data-key="special"></kbd> 奥義・鏡映破壊（鏡の世界ごと敵と街を粉砕して現実へ戻る）</td></tr>
     <tr><td><b>テトラ ✕ トリア</b></td><td>操作はテトラ、トリアはオート（ブロックを最大9個生み出し、足場にして立体の直線軌道で飛び回り、敵を切り抜ける）。<kbd data-key="attack"></kbd> ブロックの<b>集積</b>（敵の上に3×3で集めて押しつぶす）と<b>分解炸裂</b>（爆発 → 元の形に戻って展開）を交互に。<kbd data-key="special"></kbd> <b>エネミートレース</b>：ターゲットしていた敵の<b>直前の行動</b>（モーションと弾）をトリアの位置に法線トレースの敵で再現して攻撃（トレース像は地上に、対象と距離をとって出る）。トレース中にもう一度 <kbd data-key="special"></kbd> で<b>複製進化</b>（粒子で再構築して1.3倍 → 敵ごとの全ブロック連携攻撃：竜＝ブレス＋ブロック弾幕／フレア＝残像コンボ＋収縮爆発／アイス＝巨大な放射衝撃波 → トリアに戻る）。<kbd data-key="dash"></kbd> 方向入力ありで迅雷ダッシュ、ニュートラルで安全な場所へテレポート（敵弾の誘導を切る。敵から最も離れた空中のブロックの上を優先。ブロックの上に立てる）。99HIT（奥義が撃てる状態）で必殺技ボタンを押すと、トレースせず直接<b>奥義・螺旋</b>。被ダメージはテトラだけ</td></tr>
-    <tr><td><b>ゼクス（ファンド・リーパー）</b></td><td>攻撃はHPを削らず<b>債務</b>を積む（敵ライフバーの紫の縞）。<b>利率＝債務÷敵の現在の体力</b>。10秒ごとに<b>複利</b>で利息（現在の体力が大きい敵ほど利息も打撃も効きにくい）、利率100%で自動的に<b>TOB成立 → 強制執行</b>（ドラゴンのアナザーディメンジョン中は利率の上がり方が1/8、メイドインヘブン中は1/32）（デット・ブローカーの鐘3回 → 破産宣告書を叩きつけて債務をそのままダメージに）。<kbd data-key="attack"></kbd> 信用打撃（<b>地上10連コンボ</b>（左右に体を振るデンプシーロールで潜り込む）：ジャブ→ストレート→フック→回し蹴り→スピンバックナックル→飛び膝→前蹴り→後ろ回し蹴り→旋風脚→双掌「追証」。全段、標的へ自動で追従して踏み込む）、<kbd data-key="dash"></kbd> 方向入力ありで<b>迅雷ダッシュ</b>、ニュートラルで<b>肢曲を自動で3連続</b>（敵の周りを同じ向きに回り込みながら分身を残す。敵弾は分身を狙う）、<b>肢曲中にもう一度</b> <kbd data-key="dash"></kbd> で一瞬で<b>敵の背後</b>へ（1.5秒間、債務×1.5）。敵の攻撃を寸前でかわすと<b>見切り</b>＝好況（利息タイマー−2秒）。被弾直後の <kbd data-key="dash"></kbd> で<b>損切り</b>（ダメージ無効）。<kbd data-key="special"></kbd> 敵の大技の構え中なら<b>空売りカウンター</b>（信用不安＝次の利息で上乗せ）、それ以外は<b>利確</b>（積んだ債務をレバレッジ倍率 ×1／×1.35／×1.9 で敵の体力への実ダメージにして債務は0に。体力は1残る。体力が減るほど利率が上がりやすくなるので、大きな敵は利確で削ってからTOBを狙う。アイスゴーレムのような小さい敵はいきなりTOBまで届く）。<kbd>E</kbd> レバレッジ 1→2→5倍（打撃・利息の債務が倍になるかわりに被ダメージも×1.25／×2、5倍で体力30%を割ると<b>追証</b>で1倍に強制解除）、<kbd>Q</kbd> 煽り（バブル相場：利率×1.5、敵が激しくなる）、<kbd>F</kbd> インサイダー（敵の攻撃が赤い予測線で見える）。被弾は債務を返済して相殺、債務0で被弾すると<b>強制ロスカット</b>（追加ダメージ＋スキル封印6秒）。利率25/50/75%で<b>配当金</b>（拾うと攻撃強化＋回復）、敵から12m以上離れ続けると不況。移動は直線でなく流れるように弧を描く</td></tr>
+    <tr><td><b>ゼクス（ファンド・リーパー）</b></td><td>攻撃はHPを削らず<b>債務</b>を積む（敵ライフバーの紫の縞）。<b>利率＝債務÷（敵の現在の体力＋最大体力の25%）</b>。1発で上がる利率は一律0.08%（敵の大きさ：大＝ドラゴン×1、中＝フレアゴーレム×1.5、小＝アイスゴーレム×2。そのままレバレッジ×1／×2／×5・相場（好況×1.25／バブル×1.3／不況×0.6）・配当・背後取り、コンボ数、利確の加速を掛ける。ゼクスには攻撃力の与ダメ倍率は掛からず、代わりに「Lv×50ダメージ」を敵の最大体力で割った利率を足す）。10秒ごとに<b>複利</b>で利息。利率100%で<b>TOB宣告</b> → 10秒後に利率100%以上なら<b>TOB成立 → 強制執行</b>（宣告中の被弾は返済で債務が減り、割っていれば不成立）。TOBを決めると<b>バブル相場</b>（12秒、打撃×1.3・利息×1.5）。<kbd data-key="attack"></kbd> 信用打撃（<b>地上10連コンボ</b>、左右に体を振るデンプシーロールで潜り込む。全段、標的へ自動で追従）、<kbd data-key="dash"></kbd> 方向入力ありで<b>迅雷ダッシュ</b>、ニュートラルで<b>肢曲を自動で3連続</b>（分身を残して回り込む。敵弾は分身を狙う）、<b>肢曲中にもう一度</b> <kbd data-key="dash"></kbd> で一瞬で<b>敵の背後</b>へ（1.5秒間、債務×1.5）。敵の攻撃を寸前でかわすと<b>見切り</b>＝好況（10秒、利息タイマー−2秒）。被弾直後の <kbd data-key="dash"></kbd> で<b>損切り</b>（ダメージ無効）。<kbd data-key="special"></kbd> 敵の大技の構え中なら<b>空売りカウンター</b>（3発分の債務＋信用不安＝次の利息で上乗せ）、それ以外は<b>利確</b>（積んだ債務をレバレッジ倍率 ×1／×1.2／×1.5 で実ダメージにして債務は0に。利確で倒しきることもできる。削るほど利率が上がりやすく、利確のたびにその敵への積み立てが加速）。<kbd>E</kbd>／コントローラー<kbd>Y</kbd> レバレッジ 1→2→5倍（被ダメージも×1.25／×2、5倍で体力30%を割ると<b>追証</b>で1倍に強制解除）、<kbd>Q</kbd> 煽り（次の利息に上乗せ、敵が激しくなる）、<kbd>F</kbd> インサイダー（敵の攻撃が赤い予測線で見える）。被弾は債務を返済して相殺、債務0で被弾すると<b>強制ロスカット</b>（追加ダメージ＋スキル封印6秒）。利率25/50/75%で<b>配当金</b>（拾うと攻撃強化＋回復）、敵から12m以上離れ続けると不況</td></tr>
     <tr><td><b>ドラゴン：重力反転</b></td><td>15秒間、全員が18m上の透明な天井へ「空に落ちる」。ドラゴンは45発のホーミング弾幕を撃ち、こちらの攻撃は届かない（迅雷ダッシュで誘導を切ってしのぐ。チョコは回避の演算だけ有効）</td></tr>
     <tr><td><b>ドラゴン：狂暴化</b></td><td>体力50%以下で「アナザーディメンジョン」（討伐まで永続）。街と足場が消え、宇宙に浮かぶ30mのキューブに閉じ込められる。15秒ごとにキューブが回転して重力と足場が変わる。拡散レーザー（反射）・重力強化（移動とダッシュが半分）・咆哮の全体スタン5秒・小さな竜3体の紅の弾幕・ホーミング光弾</td></tr>
     <tr><td><b>ドラゴン：メイドインヘブン</b></td><td>狂暴化中に体力25%以下で最終段階（狂暴化を経ずに体力0にしても、25%まで戻って発動）。発動から20秒間は無敵。メイドインヘブン中に体力0にすると、一度だけ<b>体力33%で復活・再生</b>（再生中の3秒は無敵）。キューブの外の世界が15秒ごとに始まりへ遷移（時の逆流 → 逆ビッグバン → 無 → 深淵の大聖堂 → 光の岩窟 → 泡の世界 → 巨大な心臓「マザー」で固定）。マザーに着くと<b>カウント30</b>：10秒ごとにゲームが3秒止まり、マザーが鼓動しながらエネルギーを溜める。0になるとマザーの超高圧エネルギー粒子砲で、プレイヤーも仲間も竜も闇スピもすべて消滅して<b>GAME OVER</b>（それまでに倒す）。竜の新しい攻撃「万物流転」：プレイヤーと仲間を5秒間、素粒子の魚・鳥・鯨に変える（移動とダッシュのみ、攻撃不可）</td></tr>
@@ -246,37 +252,16 @@ setTimeout(function(){window.__bootDone();},60000);})();</script>
   <div class="tbtn" id="bAtk" data-b="attack">斬</div>
   <div class="tbtn" id="bDash" data-b="dash">迅雷</div>
   <div class="tbtn" id="bSp" data-b="special">必殺</div>
-  <div class="tsmall"><div class="tbtn" data-b="wave">手を<br>振る</div><div class="tbtn" data-b="stretch">背伸び</div><div class="tbtn" data-b="reset">リセット</div><div class="tbtn" data-b="swap">相手</div><div class="tbtn" data-b="tnext">標的</div><div class="tbtn" data-b="tstop">時止め</div><div class="tbtn" data-b="ally">共闘</div><div class="tbtn" data-b="chr">交代</div><div class="tbtn" data-b="partner">仲間</div></div>
+  <div class="tsmall"><div class="tbtn" data-b="wave"><span class="nz">手を<br>振る</span><span class="zx">レバ<br>レッジ</span></div><div class="tbtn" data-b="stretch"><span class="nz">背伸び</span><span class="zx">煽り</span></div><div class="tbtn zxOnly" data-b="kF">インサ<br>イダー</div><div class="tbtn nr" data-b="reset">リセット</div><div class="tbtn nr" data-b="swap">相手</div><div class="tbtn" data-b="tnext">標的</div><div class="tbtn npcOnly" data-b="tstop">クラウド<br>特殊</div><div class="tbtn nr" data-b="ally">共闘</div><div class="tbtn multiOnly" data-b="chr">交代</div><div class="tbtn nr" data-b="partner">仲間</div></div>
 </div>
 <div id="combo"><div class="row"><span id="hits">0</span><span id="hitlbl">HITS</span></div><div id="ctimer"><i id="ctimerI"></i></div><div id="rank"></div><div id="ult"><div class="cap"><span>ULTIMATE</span><span id="ultTxt">0 / 99</span></div><div class="g"><i id="ultI"></i></div></div></div>
-<script src="assets/setsuna.js?v=0773a185" onload="window.__bootP&&__bootP()"></script>
-<script src="assets/dragon.js?v=8beae4cd" onload="window.__bootP&&__bootP()"></script>
-<script src="assets/dark_spirit.js?v=4decea79" onload="window.__bootP&&__bootP()"></script>
-<script src="assets/cloud.js?v=3dccb559" onload="window.__bootP&&__bootP()"></script>
-<script src="assets/compass.js?v=90c5c66a" onload="window.__bootP&&__bootP()"></script>
-<script src="assets/towa.js?v=13497617" onload="window.__bootP&&__bootP()"></script>
-<script src="assets/ice_golem.js?v=8b624d77" onload="window.__bootP&&__bootP()"></script>
-<script src="assets/flare_golem.js?v=dbc2a864" onload="window.__bootP&&__bootP()"></script>
-<script src="assets/choco.js?v=84046365" onload="window.__bootP&&__bootP()"></script>
-<script src="assets/harbor.js?v=f9102544" onload="window.__bootP&&__bootP()"></script>
-<script src="assets/harbor_mirror.js?v=5423c146" onload="window.__bootP&&__bootP()"></script>
-<script src="assets/spider.js?v=6aa5676a" onload="window.__bootP&&__bootP()"></script>
-<script src="assets/tetra.js?v=4650bf24" onload="window.__bootP&&__bootP()"></script>
-<script src="assets/tria.js?v=251d1f29" onload="window.__bootP&&__bootP()"></script>
-<script src="assets/block.js?v=8265f5e1" onload="window.__bootP&&__bootP()"></script>
-<script src="assets/zex.js?v=96a64792" onload="window.__bootP&&__bootP()"></script>
-<script src="assets/mih_canyon.js?v=109e9016" onload="window.__bootP&&__bootP()"></script>
-<script src="assets/mih_cavern.js?v=00902b6f" onload="window.__bootP&&__bootP()"></script>
-<script src="assets/mih_bubble.js?v=e646f48a" onload="window.__bootP&&__bootP()"></script>
-<script src="assets/mih_cathedral.js?v=5ab2aeb9" onload="window.__bootP&&__bootP()"></script>
-<script src="assets/mih_mother.js?v=2fe460d5" onload="window.__bootP&&__bootP()"></script>
-<script src="assets/pot_white.js?v=4d4d7963" onload="window.__bootP&&__bootP()"></script>
-<script src="assets/pot_red.js?v=0c22917b" onload="window.__bootP&&__bootP()"></script>
-<script src="assets/colony.js?v=ca8b1269" onload="window.__bootP&&__bootP()"></script>
+<script>window.__DEVJS="game/devtools.js?v=46fba70b";window.__LAZY={"dragon": "assets/dragon.js?v=8bb7b4f0", "dark_spirit": "assets/dark_spirit.js?v=a0beab93", "cloud": "assets/cloud.js?v=3dccb559", "compass": "assets/compass.js?v=90c5c66a", "towa": "assets/towa.js?v=e480ebae", "ice_golem": "assets/ice_golem.js?v=8b624d77", "flare_golem": "assets/flare_golem.js?v=7c63daf1", "choco": "assets/choco.js?v=84d417a2", "harbor": "assets/harbor.js?v=ef2df4f2", "harbor_mirror": "assets/harbor_mirror.js?v=83954a55", "spider": "assets/spider.js?v=3462a1da", "tetra": "assets/tetra.js?v=3b9e42d6", "tria": "assets/tria.js?v=3b85116c", "block": "assets/block.js?v=4b133d53", "zex": "assets/zex.js?v=c39c0467", "mih_canyon": "assets/mih_canyon.js?v=712a89cb", "mih_cavern": "assets/mih_cavern.js?v=f9520002", "mih_bubble": "assets/mih_bubble.js?v=7940dcee", "mih_cathedral": "assets/mih_cathedral.js?v=c73436b7", "mih_mother": "assets/mih_mother.js?v=2a2b3751", "pot_white": "assets/pot_white.js?v=4d4d7963", "pot_red": "assets/pot_red.js?v=0c22917b"}</script>
+<script src="assets/setsuna.js?v=d25d3fb6" onload="window.__bootP&&__bootP()"></script>
+<script src="assets/colony.js?v=4ec6b723" onload="window.__bootP&&__bootP()"></script>
 <script src="assets/title.js?v=b2333702" onload="window.__bootP&&__bootP()"></script>
-<script src="assets/icons.js?v=b5013d92" onload="window.__bootP&&__bootP()"></script>
+<script src="assets/icons.js?v=7e07cd8a" onload="window.__bootP&&__bootP()"></script>
 <script src="assets/bgm.js?v=32eba4fa" onload="window.__bootP&&__bootP()"></script>
 <script src="assets/sfx.js?v=867bb993" onload="window.__bootP&&__bootP()"></script>
-<script src="game/game.js?v=63b939a2" onload="window.__bootP&&__bootP()"></script>
+<script src="game/game.js?v=60d6309a" onload="window.__bootP&&__bootP()"></script>
 </body>
 </html>
